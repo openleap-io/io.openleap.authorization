@@ -1,3 +1,6 @@
+server:
+  port: 8899
+#instance-id: ${oleap.srv.hostname}${spring.application.name}:${spring.application.instance_id:${random.value}}
 spring:
   profiles:
     active: identity-web
@@ -40,6 +43,7 @@ eureka:
     service-url:
       defaultZone: ${oleap.eureka.zone} # Must be camelCase
   instance:
+#    instance-id: ${instance-id}
     health-check-url-path: /actuator/health
     hostname: ${oleap.srv.hostname}
     # Request a lease with a validity of 5 seconds. If until then the
@@ -72,10 +76,7 @@ management:
 
 
 
-server:
-  port: 8899
-  tomcat:
-    max-swallow-size: -1
+
 
 logging:
   level:

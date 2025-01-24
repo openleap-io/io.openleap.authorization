@@ -1,44 +1,52 @@
 package io.openleap.authorization.service.identity.web;
 
 import io.openleap.authorization.service.identity.IdentityService;
-import io.openleap.authorization.service.identity.dto.ClientPrincipalRequestDto;
-import io.openleap.authorization.service.identity.dto.ClientPrincipalResponseDto;
-import io.openleap.authorization.service.identity.dto.UserPrincipalDto;
+import io.openleap.authorization.service.identity.dto.*;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.Duration;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Profile("identity-web")
 public class IdentityWebService implements IdentityService {
+    private final IdentityClient identityClient;
 
-    private final IdentityHttpClient identityHttpClient;
-
-    public IdentityWebService(IdentityHttpClient identityHttpClient) {
-        this.identityHttpClient = identityHttpClient;
+    public IdentityWebService(IdentityClient identityClient) {
+        this.identityClient = identityClient;
     }
 
     @Override
     public UserPrincipalDto getUserPrincipal(String username) {
-        return identityHttpClient.findByUsername(username);
+
+        UserPrincipalResponseDto userPrincipalResponse = identityClient.getUserPrincipal(username);
+        ProfileResponseDto profileResponseDto = identityClient.getProfileResponseDto(userPrincipalResponse.id());
+        return new UserPrincipalDto(
+                userPrincipalResponse.username(),
+                userPrincipalResponse.password(),
+                userPrincipalResponse.disabled(),
+                userPrincipalResponse.locked(),
+                profileResponseDto._embedded().profiles().stream().map(
+                        profile -> new UserPrincipalDto.Profile(
+                                profile.name(),
+                                profile.enabled(),
+                                profile.defaultProfile(),
+                                profile.roles().stream().map(
+                                        role -> new UserPrincipalDto.Profile.Role(
+                                                role.name())).collect(Collectors.toSet())
+                        )).collect(Collectors.toSet()));
     }
 
     @Override
     public RegisteredClient findByClientId(String clientId) {
 
 
-        ClientPrincipalResponseDto clientPrincipalResponseDto = identityHttpClient.getClientPrincipalResponseDto(clientId);
+        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientPrincipalResponseDto(clientId);
         Set<String> clientAuthenticationMethods = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.clientAuthenticationMethods());
         Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.authorizationGrantTypes());
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.redirectUris());
@@ -63,7 +71,7 @@ public class IdentityWebService implements IdentityService {
 
     @Override
     public RegisteredClient findById(String id) {
-        ClientPrincipalResponseDto clientPrincipalResponseDto = identityHttpClient.getClientById(id);
+        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientById(id);
         Set<String> clientAuthenticationMethods = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.clientAuthenticationMethods());
         Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.authorizationGrantTypes());
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.redirectUris());
@@ -86,7 +94,7 @@ public class IdentityWebService implements IdentityService {
 
     @Override
     public void saveClient(RegisteredClient registeredClient) {
-        identityHttpClient.saveClient(new ClientPrincipalRequestDto(
+        identityClient.saveClient(new ClientPrincipalRequestDto(
                 registeredClient.getClientId(),
                 registeredClient.getClientIdIssuedAt() == null ? "" : registeredClient.getClientIdIssuedAt().toString(),
                 registeredClient.getClientSecret(),

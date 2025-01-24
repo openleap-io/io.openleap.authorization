@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.openleap</groupId>
         <artifactId>io.openleap.parent</artifactId>
-        <version>49</version>
+        <version>50</version>
         <relativePath/>
     </parent>
     <artifactId>io.openleap.authorization</artifactId>
@@ -28,6 +28,14 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.interface21</groupId>
             <artifactId>ameba-lib</artifactId>
