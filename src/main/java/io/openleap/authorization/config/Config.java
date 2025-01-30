@@ -2,6 +2,7 @@ package io.openleap.authorization.config;
 
 import io.openleap.authorization.provider.CustomAuthenticationProvider;
 import io.openleap.authorization.provider.UserDetailsService;
+import io.openleap.authorization.repository.CustomRegisteredClientRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -23,11 +24,14 @@ public class Config {
                 OAuth2AuthorizationServerConfigurer.authorizationServer();
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
-                .with(authorizationServerConfigurer, (authorizationServer) ->
+                .with(authorizationServerConfigurer, authorizationServer ->
                         authorizationServer
-                                .oidc(oidc -> {
-                                    oidc.clientRegistrationEndpoint(Customizer.withDefaults());
-                                })
+                                .oidc(oidc ->
+                                        oidc.clientRegistrationEndpoint(clientRegistrationEndpoint ->
+                                                clientRegistrationEndpoint
+                                                        .authenticationProviders(CustomClientMetadataConfig.configureCustomClientMetadataConverters())
+                                        )
+                                )
                                 .clientAuthentication(clientAuthentication ->
                                         clientAuthentication
                                                 .authenticationProvider(customAuthenticationProvider())
@@ -37,14 +41,27 @@ public class Config {
     }
 
     @Bean
-    @Order(2)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain jwtSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .authorizeHttpRequests((authorize) -> authorize
+                .securityMatcher("/internal/**")
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().hasAuthority("SCOPE_client.create")
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+        return http.build();
+    }
+
+    @Bean
+    public SecurityFilterChain formLoginSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults());
+                        .anyRequest().authenticated()
+                )
+                .formLogin(Customizer.withDefaults())
+                .csrf(Customizer.withDefaults());
+
+
         return http.build();
     }
 

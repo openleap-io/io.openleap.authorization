@@ -1,7 +1,10 @@
 package io.openleap.authorization.service.identity.web;
 
+import feign.FeignException.NotFound;
 import io.openleap.authorization.service.identity.IdentityService;
 import io.openleap.authorization.service.identity.dto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -9,12 +12,15 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @Profile("identity-web")
 public class IdentityWebService implements IdentityService {
+    Logger logger = LoggerFactory.getLogger(IdentityWebService.class);
+
     private final IdentityClient identityClient;
 
     public IdentityWebService(IdentityClient identityClient) {
@@ -23,9 +29,9 @@ public class IdentityWebService implements IdentityService {
 
     @Override
     public UserPrincipalDto getUserPrincipal(String username) {
-
-        UserPrincipalResponseDto userPrincipalResponse = identityClient.getUserPrincipal(username);
-        ProfileResponseDto profileResponseDto = identityClient.getProfileResponseDto(userPrincipalResponse.id());
+        logger.info("Fetching user principal for username: {}", username);
+        UserPrincipalResponseDto userPrincipalResponse = identityClient.getUserPrincipalByUsername(username);
+        ProfileResponseDto profileResponseDto = identityClient.getUserPrincipalProfilesByUserPrincipalId(userPrincipalResponse.id());
         return new UserPrincipalDto(
                 userPrincipalResponse.username(),
                 userPrincipalResponse.password(),
@@ -44,9 +50,8 @@ public class IdentityWebService implements IdentityService {
 
     @Override
     public RegisteredClient findByClientId(String clientId) {
-
-
-        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientPrincipalResponseDto(clientId);
+        logger.info("Fetching client with client id: {}", clientId);
+        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientPrincipalByClientId(clientId);
         Set<String> clientAuthenticationMethods = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.clientAuthenticationMethods());
         Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.authorizationGrantTypes());
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.redirectUris());
@@ -56,22 +61,22 @@ public class IdentityWebService implements IdentityService {
 
         return RegisteredClient.withId(clientPrincipalResponseDto.id())
                 .clientId(clientPrincipalResponseDto.clientId())
-//                .clientIdIssuedAt(clientPrincipalResponseDto.clientIdIssuedAt())
+                .clientIdIssuedAt(Instant.now())
                 .clientSecret(clientPrincipalResponseDto.clientSecret())
-//                .clientSecretExpiresAt(clientPrincipalResponseDto.clientSecretExpiresAt())
                 .clientName(clientPrincipalResponseDto.clientName())
-                .clientAuthenticationMethods((authenticationMethods) -> clientAuthenticationMethods.forEach((authenticationMethod) -> authenticationMethods.add(resolveClientAuthenticationMethod(authenticationMethod))))
-                .authorizationGrantTypes((grantTypes) -> authorizationGrantTypes.forEach((grantType) -> grantTypes.add(resolveAuthorizationGrantType(grantType))))
-                .redirectUris((uris) -> uris.addAll(redirectUris))
-                .postLogoutRedirectUris((uris) -> uris.addAll(postLogoutRedirectUris))
-                .scopes((scopes) -> scopes.addAll(clientScopes)).build();
+                .clientAuthenticationMethods(authenticationMethods -> clientAuthenticationMethods.forEach(authenticationMethod -> authenticationMethods.add(resolveClientAuthenticationMethod(authenticationMethod))))
+                .authorizationGrantTypes(grantTypes -> authorizationGrantTypes.forEach(grantType -> grantTypes.add(resolveAuthorizationGrantType(grantType))))
+                .redirectUris(uris -> uris.addAll(redirectUris))
+                .postLogoutRedirectUris(uris -> uris.addAll(postLogoutRedirectUris))
+                .scopes(scopes -> scopes.addAll(clientScopes)).build();
 
 
     }
 
     @Override
     public RegisteredClient findById(String id) {
-        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientById(id);
+        logger.info("Fetching client with id: {}", id);
+        ClientPrincipalResponseDto clientPrincipalResponseDto = identityClient.getClientPrincipalById(id);
         Set<String> clientAuthenticationMethods = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.clientAuthenticationMethods());
         Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.authorizationGrantTypes());
         Set<String> redirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.redirectUris());
@@ -81,19 +86,56 @@ public class IdentityWebService implements IdentityService {
 
         return RegisteredClient.withId(clientPrincipalResponseDto.id())
                 .clientId(clientPrincipalResponseDto.clientId())
-//                .clientIdIssuedAt(clientPrincipalResponseDto.clientIdIssuedAt())
+                .clientIdIssuedAt(Instant.now())
                 .clientSecret(clientPrincipalResponseDto.clientSecret())
-//                .clientSecretExpiresAt(clientPrincipalResponseDto.clientSecretExpiresAt())
                 .clientName(clientPrincipalResponseDto.clientName())
-                .clientAuthenticationMethods((authenticationMethods) -> clientAuthenticationMethods.forEach((authenticationMethod) -> authenticationMethods.add(resolveClientAuthenticationMethod(authenticationMethod))))
-                .authorizationGrantTypes((grantTypes) -> authorizationGrantTypes.forEach((grantType) -> grantTypes.add(resolveAuthorizationGrantType(grantType))))
-                .redirectUris((uris) -> uris.addAll(redirectUris))
-                .postLogoutRedirectUris((uris) -> uris.addAll(postLogoutRedirectUris))
-                .scopes((scopes) -> scopes.addAll(clientScopes)).build();
+                .clientAuthenticationMethods(authenticationMethods -> clientAuthenticationMethods.forEach(authenticationMethod -> authenticationMethods.add(resolveClientAuthenticationMethod(authenticationMethod))))
+                .authorizationGrantTypes(grantTypes -> authorizationGrantTypes.forEach(grantType -> grantTypes.add(resolveAuthorizationGrantType(grantType))))
+                .redirectUris(uris -> uris.addAll(redirectUris))
+                .postLogoutRedirectUris(uris -> uris.addAll(postLogoutRedirectUris))
+                .scopes(scopes -> scopes.addAll(clientScopes)).build();
+    }
+
+    @Override
+    public RegisteredClient findByClientName(String clientName) {
+        logger.info("Fetching client with name: {}", clientName);
+        ClientPrincipalResponseDto clientPrincipalResponseDto;
+        try {
+            clientPrincipalResponseDto = identityClient.getClientPrincipalByClientName(clientName);
+        } catch (NotFound e) {
+            logger.info("Client with name {} not found", clientName);
+            return null;
+        } catch (Exception e) {
+            logger.error("Error while fetching client with name {}", clientName, e);
+            return null;
+        }
+
+        Set<String> clientAuthenticationMethods = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.clientAuthenticationMethods());
+        Set<String> authorizationGrantTypes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.authorizationGrantTypes());
+        Set<String> redirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.redirectUris());
+        Set<String> postLogoutRedirectUris = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.postLogoutRedirectUris());
+        Set<String> clientScopes = StringUtils.commaDelimitedListToSet(clientPrincipalResponseDto.scopes());
+
+
+        return RegisteredClient.withId(clientPrincipalResponseDto.id())
+                .clientId(clientPrincipalResponseDto.clientId())
+                .clientIdIssuedAt(Instant.now())
+                .clientSecret(clientPrincipalResponseDto.clientSecret())
+                .clientName(clientPrincipalResponseDto.clientName())
+                .clientAuthenticationMethods(authenticationMethods -> clientAuthenticationMethods.forEach(authenticationMethod -> authenticationMethods.add(resolveClientAuthenticationMethod(authenticationMethod))))
+                .authorizationGrantTypes(grantTypes -> authorizationGrantTypes.forEach(grantType -> grantTypes.add(resolveAuthorizationGrantType(grantType))))
+                .redirectUris(uris -> uris.addAll(redirectUris))
+                .postLogoutRedirectUris(uris -> uris.addAll(postLogoutRedirectUris))
+                .scopes(scopes -> scopes.addAll(clientScopes)).build();
     }
 
     @Override
     public void saveClient(RegisteredClient registeredClient) {
+        if (registeredClient == null) {
+            logger.warn("Client is null, cannot save client");
+            return;
+        }
+        logger.warn("Saving client with client id: {}", registeredClient.getClientId());
         identityClient.saveClient(new ClientPrincipalRequestDto(
                 registeredClient.getClientId(),
                 registeredClient.getClientIdIssuedAt() == null ? "" : registeredClient.getClientIdIssuedAt().toString(),
@@ -106,8 +148,15 @@ public class IdentityWebService implements IdentityService {
                 registeredClient.getPostLogoutRedirectUris().stream().reduce((a, b) -> a + "," + b).orElse(""),
                 registeredClient.getScopes().stream().reduce((a, b) -> a + "," + b).orElse(""),
                 registeredClient.getClientSettings().toString(),
-                registeredClient.getTokenSettings().toString()));
+                registeredClient.getTokenSettings().toString())
+        );
 
+    }
+
+    @Override
+    public void unregisterClient(String clientName, String instanceId) {
+        logger.info("Unregistering client with name: {} for instance id: {}", clientName, instanceId);
+        identityClient.removeClientByClientNameAndInstanceId(clientName, instanceId);
     }
 
     private static ClientAuthenticationMethod resolveClientAuthenticationMethod(String clientAuthenticationMethod) {

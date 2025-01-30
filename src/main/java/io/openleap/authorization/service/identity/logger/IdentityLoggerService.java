@@ -30,9 +30,9 @@ public class IdentityLoggerService implements IdentityService {
                     .clientSecret("{bcrypt}$2a$10$07vsZjPQz5Oc4HsMXWdxxOv7/CRh6dJBeSABX4BiXmZAowT7dajwK")
                     .id("17d0d75d-4350-47ee-a198-4c734ba85546")
                     .clientName("17d0d75d-4350-47ee-a198-4c734ba85546")
-                    .clientAuthenticationMethods(s -> {
-                        s.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-                    })
+                    .clientAuthenticationMethods(s ->
+                            s.add(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    )
                     .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                     .scope("client.create")
                     .scope("client.read")
@@ -52,7 +52,18 @@ public class IdentityLoggerService implements IdentityService {
     }
 
     @Override
-    public void saveClient(RegisteredClient registeredClient) {
+    public RegisteredClient findByClientName(String clientName) {
+        return null;
+    }
 
+    @Override
+    public void saveClient(RegisteredClient registeredClient) {
+        throw new UnsupportedOperationException("Not implemented");
+
+    }
+
+    @Override
+    public void unregisterClient(String clientId, String instanceId) {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

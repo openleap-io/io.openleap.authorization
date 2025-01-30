@@ -1,6 +1,5 @@
 server:
   port: 8899
-#instance-id: ${oleap.srv.hostname}${spring.application.name}:${spring.application.instance_id:${random.value}}
 spring:
   profiles:
     active: identity-web
@@ -73,11 +72,9 @@ management:
     web:
       exposure:
         include: "*"
-
-
-
-
-
 logging:
   level:
-    org.springframework.security: TRACE
+    root: INFO
+#    org.springframework.web: INFO
+#    org.springframework.security: TRACE
+#    org.springframework.security.oauth2: TRACE
