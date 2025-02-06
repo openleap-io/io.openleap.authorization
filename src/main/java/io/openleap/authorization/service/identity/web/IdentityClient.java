@@ -1,5 +1,6 @@
 package io.openleap.authorization.service.identity.web;
 
+import io.openleap.authorization.controller.dto.UnregisterRequest;
 import io.openleap.authorization.service.identity.FeignConfig;
 import io.openleap.authorization.service.identity.dto.ClientPrincipalRequestDto;
 import io.openleap.authorization.service.identity.dto.ClientPrincipalResponseDto;
@@ -28,6 +29,7 @@ public interface IdentityClient {
     @GetMapping("/clientPrincipals/search/findByClientName")
     ClientPrincipalResponseDto getClientPrincipalByClientName(@RequestParam String clientName);
 
-    @DeleteMapping("/registration/{clientName}/{instanceId}")
-    void removeClientByClientNameAndInstanceId(@PathVariable String clientName, @PathVariable String instanceId);
+    @PostMapping("/registration/unregister")
+    void unregisterClient(@RequestBody UnregisterRequest unregisterRequest);
+
 }

@@ -46,24 +46,14 @@ public class IdentityLoggerService implements IdentityService {
 
     }
 
-    @Override
-    public RegisteredClient findById(String id) {
-        return null;
-    }
-
-    @Override
-    public RegisteredClient findByClientName(String clientName) {
-        return null;
-    }
 
     @Override
     public void saveClient(RegisteredClient registeredClient) {
         throw new UnsupportedOperationException("Not implemented");
-
     }
 
     @Override
-    public void unregisterClient(String clientId, String instanceId) {
+    public void unregister(String instanceId) {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

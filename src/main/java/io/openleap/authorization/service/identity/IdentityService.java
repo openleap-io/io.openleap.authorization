@@ -5,9 +5,10 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 
 public interface IdentityService {
     UserPrincipalDto getUserPrincipal(String username);
+
     RegisteredClient findByClientId(String clientId);
-    RegisteredClient findById(String id);
-    RegisteredClient findByClientName(String clientName);
+
     void saveClient(RegisteredClient registeredClient);
-    void unregisterClient(String clientId, String instanceId);
+
+    void unregister(String instanceId);
 }
