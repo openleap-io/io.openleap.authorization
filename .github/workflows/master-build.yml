@@ -1,7 +1,7 @@
 name: 'master_build'
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 env:
   MAVEN_OPTS: -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
