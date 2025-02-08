@@ -1,11 +1,8 @@
 spring:
   application:
     name: AUTHORIZATION-SERVICE
-  profiles:
-    active: identity-web
   cloud:
     config:
       label: main
-      profile: default
   config:
-    import: configserver:http://${CONFIG_SERVER_USERNAME:user}:${CONFIG_SERVER_USERNAME:sa}@${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8099}?fail-fast=true&max-attempts=10&max-interval=1500&multiplier=1.2&initial-interval=1100
+    import: optional:configserver:http://${CONFIG_SERVER_USERNAME:user}:${CONFIG_SERVER_PASSWORD:sa}@${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8099}?fail-fast=true&max-attempts=20&max-interval=15000&multiplier=1.8&initial-interval=11000
