@@ -11,25 +11,25 @@ import org.springframework.web.bind.annotation.*;
 
 @FeignClient(name = "identity-service", configuration = {FeignConfig.class, CustomErrorDecoder.class})
 public interface IdentityClient {
-    @GetMapping("/userPrincipals/search/findByUsername")
+    @GetMapping("/identity/userPrincipals/search/findByUsername")
     UserPrincipalResponseDto getUserPrincipalByUsername(@RequestParam String username);
 
-    @GetMapping("/userPrincipals/{profileId}/profiles")
+    @GetMapping("/identity/userPrincipals/{profileId}/profiles")
     ProfileResponseDto getUserPrincipalProfilesByUserPrincipalId(@PathVariable String profileId);
 
-    @GetMapping("/clientPrincipals/search/findByClientId")
+    @GetMapping("/identity/clientPrincipals/search/findByClientId")
     ClientPrincipalResponseDto getClientPrincipalByClientId(@RequestParam String clientId);
 
-    @GetMapping("/clientPrincipals/{id}")
+    @GetMapping("/identity/clientPrincipals/{id}")
     ClientPrincipalResponseDto getClientPrincipalById(@PathVariable String id);
 
-    @PostMapping("/registration")
+    @PostMapping("/identity/registration")
     ClientPrincipalResponseDto saveClient(@RequestBody ClientPrincipalRequestDto clientPrincipalRequestDto);
 
-    @GetMapping("/clientPrincipals/search/findByClientName")
+    @GetMapping("/identity/clientPrincipals/search/findByClientName")
     ClientPrincipalResponseDto getClientPrincipalByClientName(@RequestParam String clientName);
 
-    @PostMapping("/registration/unregister")
+    @PostMapping("/identity/registration/unregister")
     void unregisterClient(@RequestBody UnregisterRequest unregisterRequest);
 
 }

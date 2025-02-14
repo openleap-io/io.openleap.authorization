@@ -1,8 +1,12 @@
 spring:
-  jpa:
-    show-sql: false
-    generate-ddl: true
-    hibernate:
-      ddl-auto: create
-  main:
-    banner-mode: off
+  profiles:
+    include: identity-logger, test
+  cloud:
+    config:
+      enabled: false
+  config:
+    import: classpath:config/authorization-service-default.yml
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
