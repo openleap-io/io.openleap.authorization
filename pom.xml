@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.openleap</groupId>
         <artifactId>io.openleap.parent</artifactId>
-        <version>50</version>
+        <version>51</version>
         <relativePath/>
     </parent>
     <artifactId>io.openleap.authorization</artifactId>
