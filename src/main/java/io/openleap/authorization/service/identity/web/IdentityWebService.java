@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-@Profile("identity-web")
+@Profile({"identity-web", "default"})
 public class IdentityWebService implements IdentityService {
     Logger logger = LoggerFactory.getLogger(IdentityWebService.class);
 
